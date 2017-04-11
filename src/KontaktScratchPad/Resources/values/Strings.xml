@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="Hello">Hello World, Click Me!</string>
+    <string name="ApplicationName">KontaktScratchPad</string>
+    <string name="kontakt_io_api_key">put_your_api_key_here</string>
+</resources>
