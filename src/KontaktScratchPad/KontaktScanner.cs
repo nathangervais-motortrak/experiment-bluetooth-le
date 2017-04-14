@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using System.Collections.ObjectModel;
 using Android.Content;
-using Android.Database;
-using Android.Util;
 using Com.Kontakt.Sdk.Android.Ble.Configuration;
 using Com.Kontakt.Sdk.Android.Ble.Connection;
 using Com.Kontakt.Sdk.Android.Ble.Manager;
-using Com.Kontakt.Sdk.Android.Ble.Manager.Listeners;
 using Com.Kontakt.Sdk.Android.Common;
-using Com.Kontakt.Sdk.Android.Common.Profile;
+using KontaktScratchPad.Models;
 
 namespace KontaktScratchPad
 {
@@ -19,10 +13,10 @@ namespace KontaktScratchPad
         IProximityManager proximityManager;
 
         public KontaktScanner(Context context, 
-            System.Action<ObservableCollection<IdentifiedBeacon>> doOnBeaconsUpdated)
+            System.Action<ObservableCollection<BaseBeacon>> doOnBeaconsUpdated)
         {
             // Initialize Kontakt SDK with your API key
-            KontaktSDK.Initialize("put_your_api_key_here");
+            KontaktSDK.Initialize("gUAUcsxrCiBdVGYQiSHMFRKvhghfzTyM");
 
             // Initialize Proximity Manager
             proximityManager = ProximityManagerFactory.Create(context);
@@ -38,6 +32,7 @@ namespace KontaktScratchPad
 
             var beaconListener = new KontaktBeaconListener(doOnBeaconsUpdated);
             proximityManager.SetIBeaconListener(beaconListener);
+            proximityManager.SetEddystoneListener(beaconListener);
 
         }
 

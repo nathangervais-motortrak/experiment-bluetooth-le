@@ -3,7 +3,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Android.App;
 using Android.OS;
+using Android.Support.V7.Widget;
 using Android.Widget;
+using KontaktScratchPad.Models;
 
 namespace KontaktScratchPad
 {
@@ -15,7 +17,8 @@ namespace KontaktScratchPad
         KontaktScanner scanner;
 
         private bool scannerStarted;
-        private ListView identifiedBeacons;
+        private RecyclerView rv_identifiedBeacons;
+        private TextView tv_Count;
         private MainActivityAdapter adapter;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -24,9 +27,10 @@ namespace KontaktScratchPad
             SetContentView(Resource.Layout.Main);
 
             // Initialize Scanner
-            scanner = new KontaktScanner(this, b => DoOnBeaconsUpdated(b.ToList()));
-            identifiedBeacons = FindViewById<ListView>(Resource.Id.IdentifiedBeacons);
-
+            rv_identifiedBeacons = FindViewById<RecyclerView>(Resource.Id.rv_IdentifiedBeacons);
+            rv_identifiedBeacons.SetLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.Vertical, false));
+            tv_Count = FindViewById<TextView>(Resource.Id.tv_count);
+            scanner = new KontaktScanner(this, DoOnBeaconsUpdated);
         }
 
         protected override void OnStart()
@@ -65,23 +69,12 @@ namespace KontaktScratchPad
             base.OnPause();
         }
 
-        void DoOnBeaconsUpdated(List<IdentifiedBeacon> items)
+        void DoOnBeaconsUpdated(ObservableCollection<BaseBeacon> items)
         {
-            if (adapter == null)
-            {
-                adapter = new MainActivityAdapter(this, items);
-                identifiedBeacons.Adapter = adapter;
-            }
-            else
-            {
-                adapter.NotifyItemsChanged(items);
-            }
+            tv_Count.Text = "Beacons in range: " + items.Count;
+            adapter = new MainActivityAdapter(this, items.ToList());
+            rv_identifiedBeacons.SetAdapter(adapter);
         }
-        //void DoOnEddyBeaconsUpdated(List<IdentifiedBeacon> items)
-        //{
-        //    var adapter = new MainActivityAdapter(this, items);
-        //    identifiedBeacons.Adapter = adapter;
-        //}
     }
 }
 

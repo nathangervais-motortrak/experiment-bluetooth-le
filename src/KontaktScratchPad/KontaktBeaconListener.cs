@@ -1,37 +1,54 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Util;
+﻿using Android.Util;
 using Com.Kontakt.Sdk.Android.Ble.Manager.Listeners;
 using Com.Kontakt.Sdk.Android.Common.Profile;
+using KontaktScratchPad;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using KontaktScratchPad.Models;
 
 public class KontaktBeaconListener : Java.Lang.Object, IBeaconListener, IEddystoneListener
 {
     const string TAG = nameof(KontaktBeaconListener);
-    public ObservableCollection<IdentifiedBeacon> Beacons { get; }
+    public ObservableCollection<BaseBeacon> Beacons { get; }
 
-    public KontaktBeaconListener(System.Action<ObservableCollection<IdentifiedBeacon>> doOnBeaconsUpdated)
+    public KontaktBeaconListener(System.Action<ObservableCollection<BaseBeacon>> doOnBeaconsUpdated)
     {
-        Beacons = new ObservableCollection<IdentifiedBeacon>();
+        Beacons = new ObservableCollection<BaseBeacon>();
         Beacons.CollectionChanged += (sender, args) => doOnBeaconsUpdated.Invoke(Beacons);
     }
 
     public void OnIBeaconDiscovered(IBeaconDevice iBeacon, IBeaconRegion region)
     {
-        Log.Info(TAG, "iBeacon " + iBeacon + " discovered in region " + region);
-        Beacons.Add(new IdentifiedBeacon{Identifier = iBeacon.Address});
+        var beacon = Beacons?.FirstOrDefault(b => b.UniqueId == iBeacon.UniqueId);
+        if (beacon != null)
+        {
+            Beacons.Remove(beacon);
+        }
 
+        Beacons.Add(new AppleBeacon()
+        {
+            Profile = iBeacon.Profile,
+            Address = iBeacon.Address,
+            BatteryPower = iBeacon.BatteryPower,
+            Distance = iBeacon.Distance,
+            UniqueId = iBeacon.UniqueId,
+            Name = iBeacon.Name,
+            Major = iBeacon.Major,
+            Minor = iBeacon.Minor,
+            ProximityUUID = iBeacon.ProximityUUID
+        });
     }
 
-    public void OnIBeaconLost(IBeaconDevice iBeacon, IBeaconRegion region)
+    public void OnIBeaconLost(IBeaconDevice p0, IBeaconRegion p1)
     {
-        Log.Info(TAG, "iBeacon " + iBeacon + " abandoned region " + region);
-        var beaconToRemove = Beacons.FirstOrDefault(b => b.Identifier == iBeacon.Address);
-        if (beaconToRemove != null)
+        var beacon = Beacons?.FirstOrDefault(b => b.UniqueId == p0.UniqueId);
+        if (beacon != null)
         {
-            Beacons.Remove(beaconToRemove);
+            Beacons.Remove(beacon);
         }
     }
+
 
     public void OnIBeaconsUpdated(IList<IBeaconDevice> iBeacons, IBeaconRegion region)
     {
@@ -40,17 +57,32 @@ public class KontaktBeaconListener : Java.Lang.Object, IBeaconListener, IEddysto
 
     public void OnEddystoneDiscovered(IEddystoneDevice eddystone, IEddystoneNamespace region)
     {
-        Log.Info(TAG, "Eddystone " + eddystone + " discovered in region " + region);
-        Beacons.Add(new IdentifiedBeacon { Identifier = eddystone.Address });
+        var beacon = Beacons?.FirstOrDefault(b => b.UniqueId == eddystone.UniqueId);
+        if (beacon != null)
+        {
+            Beacons.Remove(beacon);
+        }
+
+        Beacons.Add(new EddyBeacon()
+        {
+            Profile = eddystone.Profile,
+            Address = eddystone.Address,
+            BatteryPower = eddystone.BatteryPower,
+            Distance = eddystone.Distance,
+            UniqueId = eddystone.UniqueId,
+            Name = eddystone.Name,
+            Eid = eddystone.Eid,
+            Url = eddystone.Url,
+            Telemetry = eddystone.Telemetry
+        });
     }
 
-    public void OnEddystoneLost(IEddystoneDevice eddystone, IEddystoneNamespace region)
+    public void OnEddystoneLost(IEddystoneDevice p0, IEddystoneNamespace p1)
     {
-        Log.Info(TAG, "Eddystone " + eddystone + " abandoned region " + region);
-        var beaconToRemove = Beacons.FirstOrDefault(b => b.Identifier == eddystone.Address);
-        if (beaconToRemove != null)
+        var beacon = Beacons?.FirstOrDefault(b => b.UniqueId == p0.UniqueId);
+        if (beacon != null)
         {
-            Beacons.Remove(beaconToRemove);
+            Beacons.Remove(beacon);
         }
     }
 
